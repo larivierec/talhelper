@@ -34,7 +34,6 @@ type Node struct {
 	Hostname                string                        `yaml:"hostname" jsonschema:"required,description=Hostname of the node"`
 	IPAddress               string                        `yaml:"ipAddress,omitempty" jsonschema:"required,example=192.168.200.11,description=IP address where the node can be reached, can also be a comma separated IP addresses"`
 	ControlPlane            bool                          `yaml:"controlPlane" jsonschema:"description=Whether the node is a controlplane"`
-	GrubUseUKICmdline       *bool                         `yaml:"grubUseUKICmdline,omitempty" jsonschema:"description=Whether to use UKI cmdline for grub configuration. If not specified, Talos 1.12+ defaults to true, older versions default to false"`
 	InstallDisk             string                        `yaml:"installDisk,omitempty" jsonschema:"oneof_required=installDiskSelector,description=The disk used for installation"`
 	InstallDiskSelector     *v1alpha1.InstallDiskSelector `yaml:"installDiskSelector,omitempty" jsonschema:"oneof_required=installDisk,description=Look up disk used for installation"`
 	IgnoreHostname          bool                          `yaml:"ignoreHostname" jsonschema:"description=Whether to set \"machine.network.hostname\" to the generated config file"`
@@ -105,7 +104,7 @@ type ExtensionService struct {
 
 type UserVolume struct {
 	Name         string                 `yaml:"name" jsonschema:"description=Name of user volume config"`
-	VolumeType   *block.VolumeType		`yaml:"volumeType" jsonschema:"description=Volume type of user volume config"`
+	VolumeType   *block.VolumeType      `yaml:"volumeType" jsonschema:"description=Volume type of user volume config"`
 	Provisioning block.ProvisioningSpec `yaml:"provisioning" jsonschema:"description=Provisioning spec of the user volume config"`
 	Filesystem   block.FilesystemSpec   `yaml:"filesystem" jsonschema:"description=Filesystem spec of the user volume config"`
 	Encryption   block.EncryptionSpec   `yaml:"encryption" jsonschema:"description=Encryption spec of the user volume config"`
