@@ -288,6 +288,14 @@ func buildDeviceSelectorCELExpression(selector *v1alpha1.NetworkDeviceSelector) 
 		conditions = append(conditions, fmt.Sprintf(`glob("%s", link.pciid)`, selector.NetworkDevicePCIID))
 	}
 
+	if selector.NetworkDevicePhysical != nil {
+		if *selector.NetworkDevicePhysical {
+			conditions = append(conditions, `link.type == 1`)
+		} else {
+			conditions = append(conditions, `link.type != 1`)
+		}
+	}
+
 	if len(conditions) == 0 {
 		return "", nil
 	}

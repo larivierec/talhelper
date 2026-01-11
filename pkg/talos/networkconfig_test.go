@@ -7,10 +7,12 @@ import (
 
 	"github.com/budimanjojo/talhelper/v3/pkg/config"
 	"github.com/siderolabs/go-pointer"
+	netenums "github.com/siderolabs/talos/pkg/machinery/api/resource/definitions/enums"
 	networktypes "github.com/siderolabs/talos/pkg/machinery/api/resource/definitions/network"
 	"github.com/siderolabs/talos/pkg/machinery/cel"
 	"github.com/siderolabs/talos/pkg/machinery/cel/celenv"
 	"github.com/siderolabs/talos/pkg/machinery/config/types/network"
+	v1alpha1 "github.com/siderolabs/talos/pkg/machinery/config/types/v1alpha1"
 	"github.com/siderolabs/talos/pkg/machinery/nethelpers"
 	"gopkg.in/yaml.v3"
 )
@@ -1445,6 +1447,54 @@ func TestCELExpressionEvaluation(t *testing.T) {
 				t.Errorf("expected %v, got %v", tt.expected, result)
 			}
 		})
+	}
+}
+
+func TestBuildDeviceSelectorCELExpression_Physical(t *testing.T) {
+	sel := &v1alpha1.NetworkDeviceSelector{NetworkDevicePhysical: pointer.To(true)}
+
+	expr, err := buildDeviceSelectorCELExpression(sel)
+	if err != nil {
+		t.Fatalf("failed to build CEL expression: %v", err)
+	}
+	if expr == "" {
+		t.Fatalf("expected non-empty expression for physical selector")
+	}
+
+	celExpr, err := cel.ParseBooleanExpression(expr, celenv.LinkLocator())
+	if err != nil {
+		t.Fatalf("failed to parse CEL expression: %v", err)
+	}
+
+	result, err := celExpr.EvalBool(celenv.LinkLocator(), map[string]any{
+		"link": &networktypes.LinkStatusSpec{Type: netenums.NethelpersLinkType_LINK_ETHER},
+	})
+	if err != nil {
+		t.Fatalf("failed to evaluate CEL expression: %v", err)
+	}
+
+	if !result {
+		t.Fatalf("expected physical selector to match an ether link")
+	}
+
+	sel2 := &v1alpha1.NetworkDeviceSelector{NetworkDevicePhysical: pointer.To(false)}
+	expr2, err := buildDeviceSelectorCELExpression(sel2)
+	if err != nil {
+		t.Fatalf("failed to build CEL expression: %v", err)
+	}
+	celExpr2, err := cel.ParseBooleanExpression(expr2, celenv.LinkLocator())
+	if err != nil {
+		t.Fatalf("failed to parse CEL expression: %v", err)
+	}
+
+	result2, err := celExpr2.EvalBool(celenv.LinkLocator(), map[string]any{
+		"link": &networktypes.LinkStatusSpec{Type: netenums.NethelpersLinkType_LINK_ETHER},
+	})
+	if err != nil {
+		t.Fatalf("failed to evaluate CEL expression: %v", err)
+	}
+	if result2 {
+		t.Fatalf("expected physical=false selector to NOT match an ether link")
 	}
 }
 
